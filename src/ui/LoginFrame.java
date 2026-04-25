@@ -70,17 +70,30 @@ public class LoginFrame extends JFrame {
             }
         });
 
-        JLabel brandIcon = new JLabel("IMS");
-        brandIcon.setFont(new Font("Segoe UI", Font.BOLD, 48));
-        brandIcon.setForeground(Color.WHITE);
-        brandIcon.setBounds(50, 200, 300, 60);
-        brandIcon.setHorizontalAlignment(SwingConstants.CENTER);
-        mainPanel.add(brandIcon);
+        JLabel logoLabel = new JLabel();
+        try {
+            ImageIcon logoIcon = new ImageIcon("resources/main_logo.png");
+            if (logoIcon.getIconWidth() > 0) {
+                Image img = logoIcon.getImage().getScaledInstance(180, 180, Image.SCALE_SMOOTH);
+                logoLabel.setIcon(new ImageIcon(img));
+            } else {
+                logoLabel.setText("IMS");
+                logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 64));
+                logoLabel.setForeground(Color.WHITE);
+            }
+        } catch (Exception e) {
+            logoLabel.setText("IMS");
+            logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 64));
+            logoLabel.setForeground(Color.WHITE);
+        }
+        logoLabel.setBounds(50, 100, 300, 180);
+        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(logoLabel);
         
-        JLabel brandSub = new JLabel("Inventory Management System");
-        brandSub.setFont(UIStyles.FONT_H2);
-        brandSub.setForeground(new Color(255, 255, 255, 200));
-        brandSub.setBounds(50, 260, 300, 30);
+        JLabel brandSub = new JLabel("Spice Inventory System");
+        brandSub.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        brandSub.setForeground(new Color(255, 255, 255, 220));
+        brandSub.setBounds(50, 290, 300, 30);
         brandSub.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(brandSub);
         
