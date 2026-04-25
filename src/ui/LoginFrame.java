@@ -129,6 +129,21 @@ public class LoginFrame extends JFrame {
         passwordField.setBounds(480, 315, 350, 45);
         passwordField.addActionListener(e -> performLogin());
         mainPanel.add(passwordField);
+
+        JCheckBox showPassword = new JCheckBox("Show Password");
+        showPassword.setBounds(480, 365, 150, 25);
+        showPassword.setFont(UIStyles.FONT_SMALL);
+        showPassword.setForeground(UIStyles.TEXT_GRAY);
+        showPassword.setOpaque(false);
+        showPassword.setFocusPainted(false);
+        showPassword.addActionListener(e -> {
+            if (showPassword.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
+        mainPanel.add(showPassword);
         
         JButton loginBtn = UIStyles.createButton("Sign In", UIStyles.PRIMARY);
         loginBtn.setBounds(480, 400, 350, 50);
