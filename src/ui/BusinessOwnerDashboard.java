@@ -474,7 +474,29 @@ public class BusinessOwnerDashboard extends JFrame {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
-        lowStockTable = new JTable(lowStockTableModel);
+        lowStockTable = new JTable(lowStockTableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    try {
+                        Object val = getValueAt(row, 4); // Shortage column
+                        int shortage = (val instanceof Integer) ? (Integer) val : Integer.parseInt(val.toString());
+                        
+                        if (shortage > 50) {
+                            c.setBackground(new Color(255, 235, 238)); // Light Red (Critical)
+                        } else if (shortage > 0) {
+                            c.setBackground(new Color(255, 248, 225)); // Light Yellow (Warning)
+                        } else {
+                            c.setBackground(Color.WHITE);
+                        }
+                    } catch (Exception e) {
+                        c.setBackground(Color.WHITE);
+                    }
+                }
+                return c;
+            }
+        };
         UIStyles.styleTable(lowStockTable);
         
         JScrollPane scrollPane = UIStyles.createScrollPane(lowStockTable);
