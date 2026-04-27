@@ -4,8 +4,11 @@ import data.DataManager;
 import models.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -244,7 +247,19 @@ public class BusinessOwnerDashboard extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         ImageIcon icon = UIStyles.createIcon("ORDERS", UIStyles.PRIMARY_COLOR, 40);
-        panel.add(UIStyles.createSectionHeader("All Orders", "Manage and view all customer orders", icon), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(UIStyles.createSectionHeader("All Orders", "Manage and view all customer orders", icon), BorderLayout.WEST);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        searchPanel.setOpaque(false);
+        JTextField searchField = UIStyles.createTextField();
+        searchField.setPreferredSize(new Dimension(200, 35));
+        searchPanel.add(new JLabel("Search: "));
+        searchPanel.add(searchField);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        panel.add(topPanel, BorderLayout.NORTH);
 
         String[] columns = {"Order ID", "Customer", "Items", "Total (Rs.)", "Status", "Date"};
         ordersTableModel = new DefaultTableModel(columns, 0) {
@@ -253,6 +268,23 @@ public class BusinessOwnerDashboard extends JFrame {
         };
         ordersTable = new JTable(ordersTableModel);
         UIStyles.styleTable(ordersTable);
+
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(ordersTableModel);
+        ordersTable.setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { filter(); }
+            @Override public void removeUpdate(DocumentEvent e) { filter(); }
+            @Override public void changedUpdate(DocumentEvent e) { filter(); }
+            private void filter() {
+                String text = searchField.getText();
+                if (text.trim().length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
         
         ordersTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -438,6 +470,12 @@ public class BusinessOwnerDashboard extends JFrame {
             int deliveryDays = needsBackorder ? 7 : 2;
             String estDate = LocalDate.now().plusDays(deliveryDays).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             order.setEstimatedDeliveryDate(estDate);
+
+            int confirmOrder = UIStyles.showConfirm(this, 
+                "Place order for " + customerCombo.getSelectedItem().toString() + "?\nTotal Amount: Rs. " + 
+                String.format("%,.2f", total), "Confirm Order");
+            
+            if (confirmOrder != JOptionPane.YES_OPTION) return;
 
             order.setTotalAmount(total);
             dataManager.addOrder(order);
