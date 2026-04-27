@@ -392,7 +392,32 @@ public class BusinessOwnerDashboard extends JFrame {
             }
         };
         
-        JTable productTable = new JTable(newOrderProductModel);
+        JTable productTable = new JTable(newOrderProductModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    try {
+                        Boolean selected = (Boolean) getValueAt(row, 0);
+                        if (selected != null && selected) {
+                            String productId = (String) getValueAt(row, 2);
+                            int qty = (Integer) getValueAt(row, 5);
+                            Product p = dataManager.getProductById(productId);
+                            if (p != null && qty > p.getQuantity()) {
+                                c.setBackground(new Color(255, 235, 238)); // Light Red (Backorder Warning)
+                            } else {
+                                c.setBackground(new Color(238, 242, 255)); // Light Blue (Selected)
+                            }
+                        } else {
+                            c.setBackground(Color.WHITE);
+                        }
+                    } catch (Exception e) {
+                        c.setBackground(Color.WHITE);
+                    }
+                }
+                return c;
+            }
+        };
         UIStyles.styleTable(productTable);
         productTable.getColumnModel().getColumn(0).setPreferredWidth(60);
         productTable.getColumnModel().getColumn(0).setMaxWidth(60);
