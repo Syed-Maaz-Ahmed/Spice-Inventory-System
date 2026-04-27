@@ -251,8 +251,14 @@ public class BusinessOwnerDashboard extends JFrame {
         topPanel.setOpaque(false);
         topPanel.add(UIStyles.createSectionHeader("All Orders", "Manage and view all customer orders", icon), BorderLayout.WEST);
 
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         searchPanel.setOpaque(false);
+        
+        JButton exportBtn = UIStyles.createButton("Export", UIStyles.TEAL_COLOR);
+        exportBtn.setPreferredSize(new Dimension(100, 35));
+        exportBtn.addActionListener(e -> exportTableToCSV(ordersTable, "All_Orders.csv"));
+        searchPanel.add(exportBtn);
+
         JTextField searchField = UIStyles.createTextField();
         searchField.setPreferredSize(new Dimension(200, 35));
         searchPanel.add(new JLabel("Search: "));
@@ -809,8 +815,8 @@ public class BusinessOwnerDashboard extends JFrame {
             
             Customer customer = new Customer(
                 dataManager.generateCustomerId(),
-                shop,
-                owner,
+                capitalizeWords(shop),
+                capitalizeWords(owner),
                 phone,
                 address,
                 selectedPath[0]
@@ -890,8 +896,8 @@ public class BusinessOwnerDashboard extends JFrame {
                 return;
             }
 
-            c.setShopName(shopField.getText());
-            c.setOwnerName(owner);
+            c.setShopName(capitalizeWords(shopField.getText()));
+            c.setOwnerName(capitalizeWords(owner));
             c.setPhone(phone);
             c.setAddress(addressField.getText());
             c.setImagePath(newImgPath[0]);
@@ -1300,5 +1306,50 @@ public class BusinessOwnerDashboard extends JFrame {
             return false;
         }
         return true;
+    }
+
+    private String capitalizeWords(String str) {
+        if (str == null || str.isEmpty()) return str;
+        String[] words = str.split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (word.length() > 0) {
+                sb.append(Character.toUpperCase(word.charAt(0)))
+                  .append(word.substring(1).toLowerCase())
+                  .append(" ");
+            }
+        }
+        return sb.toString().trim();
+    }
+
+    private void exportTableToCSV(JTable table, String fileName) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setSelectedFile(new File(fileName));
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try (PrintWriter pw = new PrintWriter(file)) {
+                DefaultTableModel model = (DefaultTableModel) table.getModel();
+                int columnCount = model.getColumnCount();
+                
+                // Write Header
+                for (int i = 0; i < columnCount; i++) {
+                    pw.print(model.getColumnName(i) + (i == columnCount - 1 ? "" : ","));
+                }
+                pw.println();
+
+                // Write Rows
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    for (int j = 0; j < columnCount; j++) {
+                        Object val = model.getValueAt(i, j);
+                        String strVal = (val == null) ? "" : val.toString().replace(",", " ");
+                        pw.print(strVal + (j == columnCount - 1 ? "" : ","));
+                    }
+                    pw.println();
+                }
+                UIStyles.showMessage(this, "Data exported successfully to " + file.getName(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                UIStyles.showMessage(this, "Failed to export data: " + e.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }
