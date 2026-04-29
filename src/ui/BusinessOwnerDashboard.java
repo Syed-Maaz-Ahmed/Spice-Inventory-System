@@ -272,7 +272,34 @@ public class BusinessOwnerDashboard extends JFrame {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
-        ordersTable = new JTable(ordersTableModel);
+        ordersTable = new JTable(ordersTableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    if (column == 4) { // Status column
+                        try {
+                            String status = (String) getValueAt(row, column);
+                            if ("PENDING".equalsIgnoreCase(status) || "PREPARING".equalsIgnoreCase(status)) {
+                                c.setForeground(new Color(255, 140, 0)); // Orange
+                            } else if ("DELIVERED".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+                                c.setForeground(new Color(0, 150, 0)); // Green
+                            } else if ("CANCELLED".equalsIgnoreCase(status)) {
+                                c.setForeground(Color.RED);
+                            } else {
+                                c.setForeground(UIStyles.TEXT_PRIMARY);
+                            }
+                            c.setFont(c.getFont().deriveFont(Font.BOLD));
+                        } catch (Exception e) {
+                            c.setForeground(UIStyles.TEXT_PRIMARY);
+                        }
+                    } else {
+                        c.setForeground(UIStyles.TEXT_PRIMARY);
+                    }
+                }
+                return c;
+            }
+        };
         UIStyles.styleTable(ordersTable);
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(ordersTableModel);
