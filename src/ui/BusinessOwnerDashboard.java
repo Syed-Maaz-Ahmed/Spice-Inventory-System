@@ -1345,16 +1345,8 @@ public class BusinessOwnerDashboard extends JFrame {
             UIStyles.showMessage(this, "Owner name should only contain letters and spaces", "Input Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        if (!phone.matches("\\d+")) {
-            UIStyles.showMessage(this, "Contact number should only contain digits", "Input Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        if (phone.length() > 11) {
-            UIStyles.showMessage(this, "Contact number cannot exceed 11 digits", "Input Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-        if (phone.length() < 11) {
-            UIStyles.showMessage(this, "Either put 021 in the beginning or input a complete mobile number", "Contact Number Error", JOptionPane.ERROR_MESSAGE);
+        if (!phone.matches("^(03\\d{9}|021\\d{8})$")) {
+            UIStyles.showMessage(this, "Phone must be a valid 11-digit mobile (e.g. 03xx) or 11-digit landline (e.g. 021xx)", "Input Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
