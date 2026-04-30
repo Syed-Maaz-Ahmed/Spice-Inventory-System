@@ -175,6 +175,7 @@ public class BusinessOwnerDashboard extends JFrame {
             String symbol = (String) menuItems[i][2];
             
             menuButtons[i] = createMenuButton(text, action, symbol, index);
+            menuButtons[i].setToolTipText("Go to " + text);
             sidebar.add(menuButtons[i]);
             sidebar.add(Box.createVerticalStrut(5));
         }
@@ -183,6 +184,7 @@ public class BusinessOwnerDashboard extends JFrame {
         sidebar.add(Box.createVerticalGlue());
         
         JButton refreshBtn = createMenuButton("Refresh", "REFRESH", "REFRESH", -1);
+        refreshBtn.setToolTipText("Reload all data from database");
         sidebar.add(refreshBtn);
 
         return sidebar;
@@ -303,9 +305,11 @@ public class BusinessOwnerDashboard extends JFrame {
         JButton exportBtn = UIStyles.createButton("Export", UIStyles.TEAL_COLOR);
         exportBtn.setPreferredSize(new Dimension(100, 35));
         exportBtn.addActionListener(e -> exportTableToCSV(ordersTable, "All_Orders.csv"));
+        exportBtn.setToolTipText("Download this table as a CSV file");
         searchPanel.add(exportBtn);
 
         JTextField searchField = UIStyles.createTextField();
+        searchField.setToolTipText("Filter table by any keyword");
         searchField.setPreferredSize(new Dimension(200, 35));
         searchPanel.add(new JLabel("Search: "));
         searchPanel.add(searchField);
@@ -319,6 +323,10 @@ public class BusinessOwnerDashboard extends JFrame {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         ordersTable = new JTable(ordersTableModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                return "Double-click to view full order details";
+            }
             @Override
             public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
@@ -438,6 +446,7 @@ public class BusinessOwnerDashboard extends JFrame {
         btnPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
         
         JButton submitBtn = UIStyles.createButton("Place Order", UIStyles.SUCCESS_COLOR);
+        submitBtn.setToolTipText("Finalize and create this order");
         btnPanel.add(submitBtn);
         formCard.add(btnPanel, BorderLayout.SOUTH);
 
@@ -618,6 +627,10 @@ public class BusinessOwnerDashboard extends JFrame {
         };
         lowStockTable = new JTable(lowStockTableModel) {
             @Override
+            public String getToolTipText(MouseEvent e) {
+                return "Products highlighted in red need immediate attention";
+            }
+            @Override
             public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
                 if (!isRowSelected(row)) {
@@ -648,6 +661,7 @@ public class BusinessOwnerDashboard extends JFrame {
         actionPanel.setBackground(UIStyles.BACKGROUND_COLOR);
         
         JButton sendEnquiryBtn = UIStyles.createButton("Send Enquiry", UIStyles.PRIMARY_COLOR);
+        sendEnquiryBtn.setToolTipText("Request stock from supplier for the selected item");
         sendEnquiryBtn.setPreferredSize(new Dimension(160, 40));
         sendEnquiryBtn.addActionListener(e -> {
             int row = lowStockTable.getSelectedRow();
@@ -730,7 +744,12 @@ public class BusinessOwnerDashboard extends JFrame {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
         };
-        paymentsTable = new JTable(paymentsTableModel);
+        paymentsTable = new JTable(paymentsTableModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                return "Double-click a pending payment to mark it as paid";
+            }
+        };
         UIStyles.styleTable(paymentsTable);
         
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(paymentsTableModel);
@@ -862,7 +881,12 @@ public class BusinessOwnerDashboard extends JFrame {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         
-        customersTable = new JTable(customersTableModel);
+        customersTable = new JTable(customersTableModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                return "Double-click to edit customer information";
+            }
+        };
         UIStyles.styleTable(customersTable);
         customersTable.setRowHeight(50);
         customersTable.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -1256,7 +1280,12 @@ public class BusinessOwnerDashboard extends JFrame {
         manageProductsTableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
-        manageProductsTable = new JTable(manageProductsTableModel);
+        manageProductsTable = new JTable(manageProductsTableModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                return "Double-click to adjust price or alert threshold";
+            }
+        };
         UIStyles.styleTable(manageProductsTable);
         
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(manageProductsTableModel);
