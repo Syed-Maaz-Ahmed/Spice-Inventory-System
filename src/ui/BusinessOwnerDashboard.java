@@ -43,6 +43,10 @@ public class BusinessOwnerDashboard extends JFrame {
     private DefaultTableModel newOrderProductModel;
     private JLabel newOrderTotalLabel;
 
+    private JLabel totalRevenueLabel;
+    private JLabel pendingOrdersLabel;
+    private JLabel lowStockAlertsLabel;
+
     public BusinessOwnerDashboard(User user) {
         this.currentUser = user;
         this.dataManager = DataManager.getInstance();
@@ -79,7 +83,12 @@ public class BusinessOwnerDashboard extends JFrame {
         contentPanel.add(createCustomersPanel(), "CUSTOMERS");
         contentPanel.add(createManageProductsPanel(), "MANAGE_PRODUCTS");
 
-        contentWrapper.add(contentPanel, BorderLayout.CENTER);
+        JPanel mainContentWrapper = new JPanel(new BorderLayout(0, 0));
+        mainContentWrapper.setBackground(UIStyles.BACKGROUND_COLOR);
+        mainContentWrapper.add(createOverviewPanel(), BorderLayout.NORTH);
+        mainContentWrapper.add(contentPanel, BorderLayout.CENTER);
+
+        contentWrapper.add(mainContentWrapper, BorderLayout.CENTER);
         mainPanel.add(contentWrapper, BorderLayout.CENTER);
 
         add(mainPanel);
@@ -239,6 +248,43 @@ public class BusinessOwnerDashboard extends JFrame {
                 menuButtons[i].setFont(UIStyles.FONT_MENU);
             }
         }
+    }
+
+    private JPanel createOverviewPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 3, 20, 0));
+        panel.setBackground(UIStyles.BACKGROUND_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 25, 0, 25));
+
+        totalRevenueLabel = new JLabel("Rs. 0.00");
+        panel.add(createStatCard("Total Revenue (Paid)", totalRevenueLabel, UIStyles.SUCCESS_COLOR));
+
+        pendingOrdersLabel = new JLabel("0");
+        panel.add(createStatCard("Pending Orders", pendingOrdersLabel, UIStyles.WARNING_COLOR));
+
+        lowStockAlertsLabel = new JLabel("0");
+        panel.add(createStatCard("Low Stock Alerts", lowStockAlertsLabel, UIStyles.DANGER_COLOR));
+
+        return panel;
+    }
+
+    private JPanel createStatCard(String title, JLabel valueLabel, Color accentColor) {
+        JPanel card = UIStyles.createSimpleCardPanel();
+        card.setLayout(new BorderLayout(10, 10));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(3, 0, 0, 0, accentColor),
+            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+        ));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(UIStyles.FONT_BODY);
+        titleLabel.setForeground(UIStyles.TEXT_SECONDARY);
+        card.add(titleLabel, BorderLayout.NORTH);
+
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        valueLabel.setForeground(UIStyles.TEXT_PRIMARY);
+        card.add(valueLabel, BorderLayout.CENTER);
+
+        return card;
     }
 
     private JPanel createOrdersPanel() {
@@ -665,7 +711,19 @@ public class BusinessOwnerDashboard extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         ImageIcon icon = UIStyles.createIcon("PAYMENTS", UIStyles.BLUE_COLOR, 40);
-        panel.add(UIStyles.createSectionHeader("Payment Records", "Monitor incoming and outgoing payments", icon), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(UIStyles.createSectionHeader("Payment Records", "Monitor incoming and outgoing payments", icon), BorderLayout.WEST);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        searchPanel.setOpaque(false);
+        JTextField searchField = UIStyles.createTextField();
+        searchField.setPreferredSize(new Dimension(200, 35));
+        searchPanel.add(new JLabel("Search: "));
+        searchPanel.add(searchField);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        panel.add(topPanel, BorderLayout.NORTH);
 
         String[] columns = {"Payment ID", "Reference", "Type", "Amount (Rs.)", "Status", "Created", "Paid Date"};
         paymentsTableModel = new DefaultTableModel(columns, 0) {
@@ -674,6 +732,23 @@ public class BusinessOwnerDashboard extends JFrame {
         };
         paymentsTable = new JTable(paymentsTableModel);
         UIStyles.styleTable(paymentsTable);
+        
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(paymentsTableModel);
+        paymentsTable.setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { filter(); }
+            @Override public void removeUpdate(DocumentEvent e) { filter(); }
+            @Override public void changedUpdate(DocumentEvent e) { filter(); }
+            private void filter() {
+                String text = searchField.getText();
+                if (text.trim().length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
         
         JScrollPane scrollPane = UIStyles.createScrollPane(paymentsTable);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -740,7 +815,19 @@ public class BusinessOwnerDashboard extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         ImageIcon icon = UIStyles.createIcon("CUSTOMERS", UIStyles.PURPLE_COLOR, 40);
-        panel.add(UIStyles.createSectionHeader("Customer Management", "View and manage verified customers", icon), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(UIStyles.createSectionHeader("Customer Management", "View and manage verified customers", icon), BorderLayout.WEST);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        searchPanel.setOpaque(false);
+        JTextField searchField = UIStyles.createTextField();
+        searchField.setPreferredSize(new Dimension(200, 35));
+        searchPanel.add(new JLabel("Search: "));
+        searchPanel.add(searchField);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        panel.add(topPanel, BorderLayout.NORTH);
 
         String[] columns = {"Img", "ID", "Shop Name", "Owner", "Phone", "Address"};
         customersTableModel = new DefaultTableModel(columns, 0) {
@@ -758,6 +845,23 @@ public class BusinessOwnerDashboard extends JFrame {
         customersTable.setRowHeight(50);
         customersTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         customersTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(customersTableModel);
+        customersTable.setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { filter(); }
+            @Override public void removeUpdate(DocumentEvent e) { filter(); }
+            @Override public void changedUpdate(DocumentEvent e) { filter(); }
+            private void filter() {
+                String text = searchField.getText();
+                if (text.trim().length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
         
         JScrollPane scrollPane = UIStyles.createScrollPane(customersTable);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -980,10 +1084,16 @@ public class BusinessOwnerDashboard extends JFrame {
         lowStockTableModel.setRowCount(0);
         List<Product> allProducts = dataManager.getAllProducts();
         List<Order> unfulfilledOrders = new ArrayList<>();
+        int pendingOrdersCount = 0;
         for (Order o : dataManager.getAllOrders()) {
             if (o.getStatus().equals(Order.STATUS_PENDING) || o.getStatus().equals(Order.STATUS_PREPARING)) {
                 unfulfilledOrders.add(o);
+                pendingOrdersCount++;
             }
+        }
+
+        if (pendingOrdersLabel != null) {
+            pendingOrdersLabel.setText(String.valueOf(pendingOrdersCount));
         }
 
         int alerts = 0;
@@ -1008,6 +1118,10 @@ public class BusinessOwnerDashboard extends JFrame {
         } else {
             alertLabel.setText("");
         }
+        
+        if (lowStockAlertsLabel != null) {
+            lowStockAlertsLabel.setText(String.valueOf(alerts));
+        }
 
         enquiriesTableModel.setRowCount(0);
         for (SupplierEnquiry e : dataManager.getAllEnquiries()) {
@@ -1020,12 +1134,19 @@ public class BusinessOwnerDashboard extends JFrame {
         }
 
         paymentsTableModel.setRowCount(0);
+        double totalRevenue = 0;
         for (Payment p : dataManager.getAllPayments()) {
             paymentsTableModel.addRow(new Object[]{
                 p.getPaymentId(), p.getReferenceId(), p.getType(),
                 String.format("%,.2f", p.getAmount()), p.getStatus(), 
                 p.getCreatedDate(), p.getPaidDate()
             });
+            if (Payment.STATUS_PAID.equals(p.getStatus())) {
+                totalRevenue += p.getAmount();
+            }
+        }
+        if (totalRevenueLabel != null) {
+            totalRevenueLabel.setText("Rs. " + String.format("%,.2f", totalRevenue));
         }
 
         if (customersTableModel != null) {
@@ -1080,7 +1201,19 @@ public class BusinessOwnerDashboard extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         ImageIcon icon = UIStyles.createIcon("INVENTORY", UIStyles.PURPLE_COLOR, 40);
-        panel.add(UIStyles.createSectionHeader("Manage Product Pricing", "Control selling prices and stock thresholds", icon), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.add(UIStyles.createSectionHeader("Manage Product Pricing", "Control selling prices and stock thresholds", icon), BorderLayout.WEST);
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        searchPanel.setOpaque(false);
+        JTextField searchField = UIStyles.createTextField();
+        searchField.setPreferredSize(new Dimension(200, 35));
+        searchPanel.add(new JLabel("Search: "));
+        searchPanel.add(searchField);
+        topPanel.add(searchPanel, BorderLayout.EAST);
+
+        panel.add(topPanel, BorderLayout.NORTH);
 
         String[] columns = {"Product ID", "Name", "Current Stock", "Selling Price", "Threshold"};
         manageProductsTableModel = new DefaultTableModel(columns, 0) {
@@ -1088,6 +1221,24 @@ public class BusinessOwnerDashboard extends JFrame {
         };
         manageProductsTable = new JTable(manageProductsTableModel);
         UIStyles.styleTable(manageProductsTable);
+        
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(manageProductsTableModel);
+        manageProductsTable.setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { filter(); }
+            @Override public void removeUpdate(DocumentEvent e) { filter(); }
+            @Override public void changedUpdate(DocumentEvent e) { filter(); }
+            private void filter() {
+                String text = searchField.getText();
+                if (text.trim().length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
+        
         panel.add(UIStyles.createScrollPane(manageProductsTable), BorderLayout.CENTER);
 
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
