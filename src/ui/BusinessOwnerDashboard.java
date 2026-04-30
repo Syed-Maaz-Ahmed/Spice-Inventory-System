@@ -751,6 +751,28 @@ public class BusinessOwnerDashboard extends JFrame {
         });
         
         JScrollPane scrollPane = UIStyles.createScrollPane(paymentsTable);
+        
+        paymentsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = paymentsTable.getSelectedRow();
+                    if (row >= 0) {
+                        String paymentId = (String) paymentsTableModel.getValueAt(row, 0);
+                        String status = (String) paymentsTableModel.getValueAt(row, 4);
+                        if (status.equals("PENDING")) {
+                            int confirm = UIStyles.showConfirm(BusinessOwnerDashboard.this, "Mark payment " + paymentId + " as paid?", "Confirm");
+                            if (confirm == JOptionPane.YES_OPTION) {
+                                dataManager.updatePaymentStatus(paymentId, Payment.STATUS_PAID);
+                                UIStyles.showMessage(BusinessOwnerDashboard.this, "Payment marked as paid!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                refreshData();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
@@ -864,6 +886,21 @@ public class BusinessOwnerDashboard extends JFrame {
         });
         
         JScrollPane scrollPane = UIStyles.createScrollPane(customersTable);
+        
+        customersTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = customersTable.getSelectedRow();
+                    if (row >= 0) {
+                        String id = (String) customersTableModel.getValueAt(row, 1);
+                        Customer c = dataManager.getCustomerById(id);
+                        if (c != null) showEditCustomerDialog(c);
+                    }
+                }
+            }
+        });
+
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel southContainer = new JPanel();
@@ -1235,6 +1272,19 @@ public class BusinessOwnerDashboard extends JFrame {
                     sorter.setRowFilter(null);
                 } else {
                     sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
+        
+        manageProductsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = manageProductsTable.getSelectedRow();
+                    if (row >= 0) {
+                        String id = (String) manageProductsTableModel.getValueAt(row, 0);
+                        showEditProductDialog(id);
+                    }
                 }
             }
         });
