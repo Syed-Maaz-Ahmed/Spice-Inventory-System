@@ -150,6 +150,13 @@ public class LoginFrame extends JFrame {
         loginBtn.addActionListener(e -> performLogin());
         mainPanel.add(loginBtn);
         
+        JLabel versionLbl = new JLabel("System Version v1.0.5 | Powered by SpiceFlow");
+        versionLbl.setFont(UIStyles.FONT_SMALL);
+        versionLbl.setForeground(new Color(255, 255, 255, 150));
+        versionLbl.setBounds(50, 560, 300, 20);
+        versionLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(versionLbl);
+        
         setContentPane(mainPanel);
     }
 
