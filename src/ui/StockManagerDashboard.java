@@ -134,6 +134,7 @@ public class StockManagerDashboard extends JFrame {
             String symbol = (String) menuItems[i][2];
             
             menuButtons[i] = createMenuButton(text, action, symbol, index);
+            menuButtons[i].setToolTipText("Open " + text + " panel");
             sidebar.add(menuButtons[i]);
             sidebar.add(Box.createVerticalStrut(5));
         }
@@ -142,7 +143,26 @@ public class StockManagerDashboard extends JFrame {
         sidebar.add(Box.createVerticalGlue());
         
         JButton refreshBtn = createMenuButton("Refresh", "REFRESH", "🔄", -1);
+        refreshBtn.setToolTipText("Sync data with server");
         sidebar.add(refreshBtn);
+
+        sidebar.add(Box.createVerticalStrut(15));
+        
+        JPanel statusFooter = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        statusFooter.setOpaque(false);
+        statusFooter.setMaximumSize(new Dimension(220, 30));
+        
+        JLabel dot = new JLabel("●");
+        dot.setForeground(UIStyles.SUCCESS_COLOR);
+        dot.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        JLabel statusText = new JLabel("System: Active | v1.0.5");
+        statusText.setFont(UIStyles.FONT_SMALL);
+        statusText.setForeground(UIStyles.TEXT_SECONDARY);
+        
+        statusFooter.add(dot);
+        statusFooter.add(statusText);
+        sidebar.add(statusFooter);
 
         return sidebar;
     }
